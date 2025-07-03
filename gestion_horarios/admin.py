@@ -5,7 +5,7 @@ from .models import Becario, Registro
 
 @admin.register(Becario)
 class BecarioAdmin(admin.ModelAdmin):
-    list_display = ("apellido", "nombre", "legajo", "dni")  # Añadido legajo
+    list_display = ("apellido", "nombre", "legajo", "dni") 
     search_fields = ("apellido", "nombre", "legajo", "dni")
 
 
@@ -16,8 +16,7 @@ class RegistroAdmin(admin.ModelAdmin):
         "fecha_hora_entrada",
         "fecha_hora_salida",
         "incidencia",
-    )  # Añadido incidencia
+    ) 
     list_filter = ("incidencia", "becario", "fecha_hora_entrada")
     readonly_fields = ("fecha_hora_entrada", "fecha_hora_salida")
-    # Para poder filtrar por fecha de forma más cómoda
     date_hierarchy = "fecha_hora_entrada"

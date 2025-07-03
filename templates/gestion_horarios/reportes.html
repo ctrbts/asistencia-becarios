@@ -1,4 +1,22 @@
 {% extends 'admin/base_site.html' %} {% block content %}
+<style>
+    .boton{
+        padding: 0.5rem 1rem;
+        margin: 2rem 0;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .boton:hover {
+        background-color: #45a049;  
+    }
+</style>
+
 <h1>Reportes de Asistencia</h1>
 
 <h2>Becarios Activos Actualmente</h2>
@@ -20,11 +38,16 @@
     <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio|default_if_none:'' }}" required>
     <label for="fecha_fin">Hasta:</label>
     <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin|default_if_none:'' }}" required>
-    <button type="submit">Generar Reporte</button>
+    <button type="submit" class="boton">Generar Reporte</button>
 </form>
 
 {% if becarios_con_horas is not None %}
 <h3>Resultados del Reporte</h3>
+<br>
+<a href="{% url 'reporte_pdf' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}" target="_blank" class="boton">
+    🖨️ Imprimir PDF
+</a>
+<br>
 {% if becarios_con_horas %}
 <table>
     <thead>
@@ -45,6 +68,7 @@
     </tbody>
 </table>
 {% else %}
+<br>
 <p>No se encontraron registros completos en el periodo seleccionado.</p>
 {% endif %}
 {% endif %}

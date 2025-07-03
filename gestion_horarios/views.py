@@ -1,5 +1,9 @@
 # en 'gestion_horarios/views.py'
 
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.utils import timezone
@@ -148,3 +152,55 @@ def becarios_activos_vista(request):
 
     context = {"registros_activos": registros_activos}
     return render(request, "gestion_horarios/activos.html", context)
+
+
+@login_required
+def generar_reporte_pdf(request):
+    # Obtenemos las fechas del request GET, igual que en la vista de reportes
+    fecha_inicio_str = request.GET.get("fecha_inicio")
+    fecha_fin_str = request.GET.get("fecha_fin")
+
+    becarios_con_horas = None  # Lo inicializamos por si no hay fechas
+
+    if fecha_inicio_str and fecha_fin_str:
+        fecha_inicio = timezone.datetime.strptime(fecha_inicio_str, "%Y-%m-%d")
+        fecha_fin = timezone.datetime.combine(
+            timezone.datetime.strptime(fecha_fin_str, "%Y-%m-%d"),
+            timezone.datetime.max.time(),
+        )
+
+        # Reutilizamos la misma consulta del reporte anterior
+        becarios_con_horas = (
+            Becario.objects.filter(
+                registro__fecha_hora_entrada__gte=fecha_inicio,
+                registro__fecha_hora_salida__lte=fecha_fin,
+                registro__fecha_hora_salida__isnull=False,
+            )
+            .annotate(
+                duracion_registro=F("registro__fecha_hora_salida")
+                - F("registro__fecha_hora_entrada")
+            )
+            .values("legajo", "nombre", "apellido")
+            .annotate(horas_totales=Sum("duracion_registro"))
+            .order_by("apellido", "nombre")
+        )
+
+    # Renderizamos la plantilla HTML a un string
+    context = {
+        "becarios_con_horas": becarios_con_horas,
+        "fecha_inicio": fecha_inicio_str,
+        "fecha_fin": fecha_fin_str,
+    }
+    html_string = render_to_string("gestion_horarios/reporte_pdf.html", context)
+
+    # Creamos el PDF con WeasyPrint
+    html = HTML(string=html_string)
+    pdf = html.write_pdf()
+
+    # Devolvemos el PDF como una respuesta HTTP
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'inline; filename="reporte_horas_{fecha_inicio_str}_al_{fecha_fin_str}.pdf"'
+    )
+
+    return response
