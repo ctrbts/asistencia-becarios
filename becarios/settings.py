@@ -84,7 +84,6 @@ WSGI_APPLICATION = "becarios.wsgi.application"
 DATABASES = {
     # Para entornos con PostgreSQL
     #'default': dj_database_url.config(conn_max_age=600)
-    
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
@@ -125,11 +124,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = (
+    BASE_DIR / "staticfiles"
+) 
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
