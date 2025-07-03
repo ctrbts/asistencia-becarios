@@ -31,6 +31,36 @@ Configurar la base de datos PostgreSQL
 
 Actualiza la DATABASE_URL en tu archivo .env con estos datos.
 
+## Despliegue en Windows (Para lan o intranet) 🖥️
+Instala los prerrequisitos:
+
+    py -m venv .venv
+    .venv\Scripts\activate
+
+instalar requirements.txt y crear el archivo .env.
+
+    python manage.py migrate
+    python manage.py collectstatic
+
+Ejecuta la Aplicación con Waitress:
+
+Abre una terminal (cmd o PowerShell), activa tu entorno virtual y ejecuta:
+
+    waitress-serve --host 0.0.0.0 --port=8000 mi_proyecto.wsgi:application
+
+Tu aplicación estará disponible en http://tu_ip_local:8000.
+
+Hacerlo persistente:
+
+Crea un archivo de texto llamado iniciar_app.bat. y pega las siguientes líneas, ajustando la ruta a tu proyecto:
+
+    @echo off
+    cd C:\ruta\a\tu\proyecto\asistencia-becarios
+    call .venv\Scripts\activate.bat
+    echo Iniciando servidor de asistencia...
+    waitress-serve --host 0.0.0.0 --port=8000 mi_proyecto.wsgi:application
+
+Puedes ejecutar este archivo .bat para iniciar el servidor. Para que inicie con Windows, puedes crear un acceso directo a este archivo y moverlo a la carpeta de Inicio de Windows (C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp).
 
 # Configurar el Proyecto
 ## Ejecuta los comandos de Django
