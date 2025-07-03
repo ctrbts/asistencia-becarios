@@ -1,0 +1,52 @@
+{% extends 'admin/base_site.html' %} {% block content %}
+<h1>Reportes de Asistencia</h1>
+
+<h2>Becarios Activos Actualmente</h2>
+{% if becarios_activos %}
+<ul>
+    {% for registro in becarios_activos %}
+    <li><strong>{{ registro.becario.apellido }}, {{ registro.becario.nombre }}</strong> - Ingresó a las {{
+        registro.fecha_hora_entrada|time:"H:i" }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No hay becarios activos en este momento.</p>
+{% endif %}
+<hr>
+
+<h2>Reporte de Horas por Periodo</h2>
+<form method="get" action="">
+    <label for="fecha_inicio">Desde:</label>
+    <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio|default_if_none:'' }}" required>
+    <label for="fecha_fin">Hasta:</label>
+    <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin|default_if_none:'' }}" required>
+    <button type="submit">Generar Reporte</button>
+</form>
+
+{% if becarios_con_horas is not None %}
+<h3>Resultados del Reporte</h3>
+{% if becarios_con_horas %}
+<table>
+    <thead>
+        <tr>
+            <th>Legajo</th>
+            <th>Becario</th>
+            <th>Horas Totales (aprox.)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for becario in becarios_con_horas %}
+        <tr>
+            <td>{{ becario.legajo }}</td>
+            <td>{{ becario.apellido }}, {{ becario.nombre }}</td>
+            <td>{{ becario.horas_totales }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No se encontraron registros completos en el periodo seleccionado.</p>
+{% endif %}
+{% endif %}
+
+{% endblock %}

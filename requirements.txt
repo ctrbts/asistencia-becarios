@@ -1,0 +1,7 @@
+# requirements.txt
+django
+gunicorn        # Para Ubuntu
+waitress        # Para Windows
+psycopg2-binary # Adaptador para PostgreSQL
+python-dotenv   # Para leer el archivo .env
+dj-database-url # Para configurar la DB desde la URL

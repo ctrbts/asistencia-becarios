@@ -1,0 +1,34 @@
+/* /static/css/admin_custom.css */
+
+/* Usamos un ID que pondremos en nuestra plantilla para no afectar otros elementos */
+#branding-custom {
+    /* background-color: #1e3a5f; */
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#branding-custom a {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+#branding-custom a:hover {
+    color: #d0e1f9;
+    /* Un azul más claro para el hover */
+}
+
+/* Si decides añadir un logo */
+#branding-custom img {
+    height: 40px;
+    margin-right: 15px;
+    vertical-align: middle;
+}
+
+/* Estilo para el nombre junto al logo */
+#branding-custom .site-name-text {
+    vertical-align: middle;
+}

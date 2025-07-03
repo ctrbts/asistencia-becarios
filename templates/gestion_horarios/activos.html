@@ -1,0 +1,44 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block title %} Becarios Activos {% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Becarios Activos Actualmente</h1>
+
+    {% if registros_activos %}
+    <div class="module" id="changelist">
+        <table id="result_list">
+            <thead>
+                <tr>
+                    <th scope="col" class="sortable column-nombre">
+                        <div class="text"><a>Nombre y Apellido</a></div>
+                    </th>
+                    <th scope="col" class="sortable column-legajo">
+                        <div class="text"><a>Legajo</a></div>
+                    </th>
+                    <th scope="col" class="sortable column-entrada">
+                        <div class="text"><a>Hora de Entrada</a></div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in registros_activos %}
+                <tr class="{% cycle 'row1' 'row2' %}">
+                    <td>{{ registro.becario.nombre }} {{ registro.becario.apellido }}</td>
+                    <td>{{ registro.becario.legajo }}</td>
+                    <td>{{ registro.fecha_hora_entrada|time:"H:i:s" }} ({{ registro.fecha_hora_entrada|date:"d/m/Y" }})
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No hay becarios activos en este momento.</p>
+    {% endif %}
+
+    <p><a href="{% url 'reportes' %}">Volver a los reportes completos</a></p>
+</div>
+{% endblock %}
