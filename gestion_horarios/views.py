@@ -1,5 +1,9 @@
 # en 'gestion_horarios/views.py'
 
+from itertools import groupby
+from operator import attrgetter
+from datetime import timedelta
+
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
@@ -156,11 +160,10 @@ def becarios_activos_vista(request):
 
 @login_required
 def generar_reporte_pdf(request):
-    # Obtenemos las fechas del request GET, igual que en la vista de reportes
     fecha_inicio_str = request.GET.get("fecha_inicio")
     fecha_fin_str = request.GET.get("fecha_fin")
 
-    becarios_con_horas = None  # Lo inicializamos por si no hay fechas
+    reporte_agrupado = []
 
     if fecha_inicio_str and fecha_fin_str:
         fecha_inicio = timezone.datetime.strptime(fecha_inicio_str, "%Y-%m-%d")
@@ -169,38 +172,47 @@ def generar_reporte_pdf(request):
             timezone.datetime.max.time(),
         )
 
-        # Reutilizamos la misma consulta del reporte anterior
-        becarios_con_horas = (
-            Becario.objects.filter(
-                registro__fecha_hora_entrada__gte=fecha_inicio,
-                registro__fecha_hora_salida__lte=fecha_fin,
-                registro__fecha_hora_salida__isnull=False,
+        # 1. Obtenemos todos los registros cerrados en el rango, ordenados por becario
+        registros = (
+            Registro.objects.filter(
+                fecha_hora_entrada__gte=fecha_inicio,
+                fecha_hora_salida__lte=fecha_fin,
+                fecha_hora_salida__isnull=False,
             )
-            .annotate(
-                duracion_registro=F("registro__fecha_hora_salida")
-                - F("registro__fecha_hora_entrada")
-            )
-            .values("legajo", "nombre", "apellido")
-            .annotate(horas_totales=Sum("duracion_registro"))
-            .order_by("apellido", "nombre")
+            .select_related("becario")
+            .order_by("becario__apellido", "becario__nombre", "fecha_hora_entrada")
         )
 
-    # Renderizamos la plantilla HTML a un string
+        # 2. Agrupamos los registros por becario usando Python
+        for becario, regs in groupby(registros, key=attrgetter("becario")):
+            registros_becario = list(regs)
+
+            # 3. Calculamos el total de horas para este grupo
+            total_horas = sum((r.duracion for r in registros_becario), timedelta())
+
+            reporte_agrupado.append(
+                {
+                    "becario": becario,
+                    "registros": registros_becario,
+                    "total_horas": total_horas,
+                }
+            )
+
+    # Renderizamos la nueva plantilla
     context = {
-        "becarios_con_horas": becarios_con_horas,
+        "reporte_agrupado": reporte_agrupado,
         "fecha_inicio": fecha_inicio_str,
         "fecha_fin": fecha_fin_str,
     }
-    html_string = render_to_string("gestion_horarios/reporte_pdf.html", context)
-
-    # Creamos el PDF con WeasyPrint
+    html_string = render_to_string(
+        "gestion_horarios/reporte_detallado_pdf.html", context
+    )
     html = HTML(string=html_string)
     pdf = html.write_pdf()
 
-    # Devolvemos el PDF como una respuesta HTTP
     response = HttpResponse(pdf, content_type="application/pdf")
     response["Content-Disposition"] = (
-        f'inline; filename="reporte_horas_{fecha_inicio_str}_al_{fecha_fin_str}.pdf"'
+        f'inline; filename="reporte_detallado_{fecha_inicio_str}_al_{fecha_fin_str}.pdf"'
     )
 
     return response
